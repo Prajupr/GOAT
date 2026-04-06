@@ -1,0 +1,22 @@
+# ROS / Colcon
+build/
+install/
+log/
+*.log
+*.pyc
+__pycache__/
+*.swp
+*.swo
+*.db
+*.egg-info/
+*.bak
+*.tmp
+# IDE
+.vscode/
+.idea/
+
+# binary/executable
+*.AppImage
+
+# local shell history
+*.history
