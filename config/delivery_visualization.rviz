@@ -1,0 +1,97 @@
+BackgroundColor: 48 48 48
+Camera:
+  Distance: 10
+  Fixed Frame: world
+  Name: Main Camera
+  Pitch: 0.5
+  Target:
+    X: 0
+    Y: 0
+    Z: 0
+  View Controller Type: Orbit
+  Yaw: 0
+  Zoom: 1
+Displays:
+  - Alpha: 1
+    Cell Size: 1
+    Class: rviz/Grid
+    Color: 160 160 164
+    Enabled: true
+    Line Style:
+      Line Width: 0.03
+      Value: Lines
+    Name: Grid
+    Normal Cell Count: 0
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Plane: XY
+    Plane Cell Count: 10
+    Reference Frame: <Fixed Frame>
+      Value: world
+  - Class: rviz/TF
+    Enabled: true
+    Frame Timeout: 15
+    Frames:
+      All Enabled: true
+    Marker Scale: 1
+    Name: TF
+    Show Arrows: true
+    Show Axes: true
+    Show Names: true
+    Update Interval: 0
+  - Class: rviz/MarkerArray
+    Enabled: true
+    Name: Delivery Markers
+    Namespaces:
+      butler_delivery: true
+    Queue Size: 100
+    Topics:
+      - butler_delivery/markers
+  - Class: rviz/Text
+    Background Color:
+      Alpha: 0.8
+      Blue: 0
+      Green: 0
+      Red: 0
+    Class: rviz/Text
+    Enabled: true
+    Font Size: 12
+    Line Width: 2
+    Name: Status Text
+    Position:
+      X: 0.1
+      Y: 0.1
+      Z: 0
+    Text: Status: $(arg status)
+    Topic: /butler/status
+Enabled: true
+Global Options:
+  Background Color: 48 48 48
+  Fixed Frame: world
+  Frame Rate: 30
+Name: Delivery Visualization
+Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+Value: true
+Views:
+  Current:
+    Class: rviz/Orbit
+    Distance: 10
+    Focal Point:
+      X: 0
+      Y: 0
+      Z: 0
+    Name: Current View
+    Pitch: 0.5
+    Yaw: 0
+  Saved: ~
+Window Geometry:
+  Height: 800
+  Hidden: false
+  Width: 1200
+  X: 0
+  Y: 0

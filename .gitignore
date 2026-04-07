@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# ROS2 build artifacts
+log/
+install/
+
+# IDE
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
