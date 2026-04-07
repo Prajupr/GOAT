@@ -453,8 +453,6 @@ class ButlerDeliveryManager(Node):
 
         if self.current_state == DeliveryState.RETURNING_HOME:
             if self._nav_result_ready:
-                self.publish_state()
-                self.publish_status("Returned home, ready for orders")
                 self.get_logger().info("Returned to home position")
                 for order in self.active_orders:
                     if order.status not in ["delivered", "canceled", "timeout"]:
@@ -464,6 +462,8 @@ class ButlerDeliveryManager(Node):
                 self.active_orders = []
                 self.current_order_index = 0
                 self.current_state = DeliveryState.IDLE
+                self.publish_state()
+                self.publish_status("Returned home, ready for orders")
             return
 
     def advance_after_current_order(self):

@@ -47,6 +47,9 @@ class ScenarioRunner(Node):
         self.get_logger().info("Waiting for confirm services...")
         self.kitchen_client.wait_for_service(timeout_sec=30.0)
         self.table_client.wait_for_service(timeout_sec=30.0)
+        # Allow publisher-subscriber matching to settle
+        time.sleep(2.0)
+        self.get_logger().info("Services ready")
 
     def publish_order(self, table_ids):
         msg = Int32MultiArray()
@@ -219,11 +222,19 @@ class ScenarioRunner(Node):
         time.sleep(1.0)
         self.call_service(self.table_client, "/butler/confirm_at_table")
 
+        # Wait for transition to going_to_table (heading to table 2)
+        if not self.wait_for_state("going_to_table", timeout=30.0):
+            return
+
         # Deliver to table 2
         if not self.wait_for_state("delivering_food"):
             return
         time.sleep(1.0)
         self.call_service(self.table_client, "/butler/confirm_at_table")
+
+        # Wait for transition to going_to_table (heading to table 3)
+        if not self.wait_for_state("going_to_table", timeout=30.0):
+            return
 
         # Deliver to table 3
         if not self.wait_for_state("delivering_food"):
@@ -264,7 +275,11 @@ class ScenarioRunner(Node):
         self.call_service(self.table_client, "/butler/confirm_at_table")
         self.get_logger().info("Table 2 confirmed")
 
-        # Robot moves to table 3
+        # Wait for state to leave delivering_food (going_to_table for table 3)
+        if not self.wait_for_state("going_to_table", timeout=30.0):
+            return
+
+        # Wait for arrival at table 3
         if not self.wait_for_state("delivering_food"):
             return
         time.sleep(1.0)
@@ -298,6 +313,10 @@ class ScenarioRunner(Node):
             return
         time.sleep(1.0)
         self.call_service(self.table_client, "/butler/confirm_at_table")
+
+        # Wait for transition to going_to_table (heading to table 3, table 2 was cancelled)
+        if not self.wait_for_state("going_to_table", timeout=30.0):
+            return
 
         # Deliver to table 3 (table 2 was cancelled)
         if not self.wait_for_state("delivering_food"):
