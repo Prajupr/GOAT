@@ -450,29 +450,53 @@ class ButlerDeliveryManager(Node):
         marker_array = MarkerArray()
         marker_id = 0
 
-        # Robot position marker
+        # Robot position marker (cylinder for better visibility)
         robot_marker = Marker()
         robot_marker.header.frame_id = "world"
         robot_marker.header.stamp = self.get_clock().now().to_msg()
         robot_marker.ns = "robot"
         robot_marker.id = marker_id
         marker_id += 1
-        robot_marker.type = Marker.SPHERE
+        robot_marker.type = Marker.CYLINDER
         robot_marker.action = Marker.ADD
         robot_marker.pose.position.x = self.current_position["x"]
         robot_marker.pose.position.y = self.current_position["y"]
-        robot_marker.pose.position.z = self.current_position["z"]
+        robot_marker.pose.position.z = 0.15
         robot_marker.pose.orientation.w = 1.0
-        robot_marker.scale.x = 0.2
-        robot_marker.scale.y = 0.2
-        robot_marker.scale.z = 0.2
+        robot_marker.scale.x = 0.22
+        robot_marker.scale.y = 0.22
+        robot_marker.scale.z = 0.3
         robot_marker.color.r = 0.0
         robot_marker.color.g = 1.0
         robot_marker.color.b = 0.0
-        robot_marker.color.a = 1.0
+        robot_marker.color.a = 0.9
+        robot_marker.lifetime.sec = 0
         marker_array.markers.append(robot_marker)
 
-        # State text marker
+        # Robot direction ring on top
+        ring_marker = Marker()
+        ring_marker.header.frame_id = "world"
+        ring_marker.header.stamp = self.get_clock().now().to_msg()
+        ring_marker.ns = "robot"
+        ring_marker.id = marker_id
+        marker_id += 1
+        ring_marker.type = Marker.SPHERE
+        ring_marker.action = Marker.ADD
+        ring_marker.pose.position.x = self.current_position["x"]
+        ring_marker.pose.position.y = self.current_position["y"]
+        ring_marker.pose.position.z = 0.35
+        ring_marker.pose.orientation.w = 1.0
+        ring_marker.scale.x = 0.12
+        ring_marker.scale.y = 0.12
+        ring_marker.scale.z = 0.12
+        ring_marker.color.r = 0.2
+        ring_marker.color.g = 0.9
+        ring_marker.color.b = 0.2
+        ring_marker.color.a = 1.0
+        ring_marker.lifetime.sec = 0
+        marker_array.markers.append(ring_marker)
+
+        # State text marker above robot
         state_marker = Marker()
         state_marker.header.frame_id = "world"
         state_marker.header.stamp = self.get_clock().now().to_msg()
@@ -482,15 +506,16 @@ class ButlerDeliveryManager(Node):
         state_marker.type = Marker.TEXT_VIEW_FACING
         state_marker.action = Marker.ADD
         state_marker.pose.position.x = self.current_position["x"]
-        state_marker.pose.position.y = self.current_position["y"] + 0.3
-        state_marker.pose.position.z = 0.5
+        state_marker.pose.position.y = self.current_position["y"]
+        state_marker.pose.position.z = 0.6
         state_marker.pose.orientation.w = 1.0
-        state_marker.scale.z = 0.1
+        state_marker.scale.z = 0.12
         state_marker.color.r = 1.0
         state_marker.color.g = 1.0
         state_marker.color.b = 1.0
         state_marker.color.a = 1.0
-        state_marker.text = f"State: {self.current_state.value}"
+        state_marker.text = f"[{self.current_state.value.replace('_', ' ').upper()}]"
+        state_marker.lifetime.sec = 0
         marker_array.markers.append(state_marker)
 
         # Current order text marker
@@ -505,67 +530,279 @@ class ButlerDeliveryManager(Node):
             order_marker.type = Marker.TEXT_VIEW_FACING
             order_marker.action = Marker.ADD
             order_marker.pose.position.x = self.current_position["x"]
-            order_marker.pose.position.y = self.current_position["y"] + 0.5
-            order_marker.pose.position.z = 0.5
+            order_marker.pose.position.y = self.current_position["y"]
+            order_marker.pose.position.z = 0.8
             order_marker.pose.orientation.w = 1.0
-            order_marker.scale.z = 0.08
+            order_marker.scale.z = 0.09
             order_marker.color.r = 1.0
-            order_marker.color.g = 0.5
+            order_marker.color.g = 0.7
             order_marker.color.b = 0.0
             order_marker.color.a = 1.0
             order_marker.text = f"Table {current_order.table_id}: {current_order.status}"
+            order_marker.lifetime.sec = 0
             marker_array.markers.append(order_marker)
 
-        # Location markers (kitchen and tables)
-        locations = [
-            ("kitchen", self.KITCHEN_POSITION, (1.0, 0.0, 0.0)),
-            ("home", self.HOME_POSITION, (0.0, 0.0, 1.0)),
-        ]
+            # Arrow from robot to current target
+            target_pos = None
+            if self.current_state == DeliveryState.GOING_TO_KITCHEN:
+                target_pos = self.KITCHEN_POSITION
+            elif self.current_state == DeliveryState.GOING_TO_TABLE:
+                target_pos = self.TABLE_POSITIONS.get(current_order.table_id)
+            elif self.current_state == DeliveryState.RETURNING_HOME:
+                target_pos = self.HOME_POSITION
+
+            if target_pos:
+                arrow_marker = Marker()
+                arrow_marker.header.frame_id = "world"
+                arrow_marker.header.stamp = self.get_clock().now().to_msg()
+                arrow_marker.ns = "target_arrow"
+                arrow_marker.id = marker_id
+                marker_id += 1
+                arrow_marker.type = Marker.ARROW
+                arrow_marker.action = Marker.ADD
+                start_pt = Point()
+                start_pt.x = self.current_position["x"]
+                start_pt.y = self.current_position["y"]
+                start_pt.z = 0.05
+                end_pt = Point()
+                end_pt.x = target_pos["x"]
+                end_pt.y = target_pos["y"]
+                end_pt.z = 0.05
+                arrow_marker.points = [start_pt, end_pt]
+                arrow_marker.scale.x = 0.03
+                arrow_marker.scale.y = 0.06
+                arrow_marker.scale.z = 0.06
+                arrow_marker.color.r = 1.0
+                arrow_marker.color.g = 1.0
+                arrow_marker.color.b = 0.0
+                arrow_marker.color.a = 0.8
+                arrow_marker.lifetime.sec = 0
+                marker_array.markers.append(arrow_marker)
+
+        # Location markers with status-aware colors
+        # Home marker
+        home_marker = Marker()
+        home_marker.header.frame_id = "world"
+        home_marker.header.stamp = self.get_clock().now().to_msg()
+        home_marker.ns = "locations"
+        home_marker.id = marker_id
+        marker_id += 1
+        home_marker.type = Marker.CYLINDER
+        home_marker.action = Marker.ADD
+        home_marker.pose.position.x = self.HOME_POSITION["x"]
+        home_marker.pose.position.y = self.HOME_POSITION["y"]
+        home_marker.pose.position.z = 0.01
+        home_marker.pose.orientation.w = 1.0
+        home_marker.scale.x = 0.35
+        home_marker.scale.y = 0.35
+        home_marker.scale.z = 0.02
+        home_marker.color.r = 0.2
+        home_marker.color.g = 0.4
+        home_marker.color.b = 1.0
+        home_marker.color.a = 0.8
+        home_marker.lifetime.sec = 0
+        marker_array.markers.append(home_marker)
+
+        # Home label
+        home_label = Marker()
+        home_label.header.frame_id = "world"
+        home_label.header.stamp = self.get_clock().now().to_msg()
+        home_label.ns = "labels"
+        home_label.id = marker_id
+        marker_id += 1
+        home_label.type = Marker.TEXT_VIEW_FACING
+        home_label.action = Marker.ADD
+        home_label.pose.position.x = self.HOME_POSITION["x"]
+        home_label.pose.position.y = self.HOME_POSITION["y"] + 0.25
+        home_label.pose.position.z = 0.15
+        home_label.pose.orientation.w = 1.0
+        home_label.scale.z = 0.08
+        home_label.color.r = 0.5
+        home_label.color.g = 0.7
+        home_label.color.b = 1.0
+        home_label.color.a = 1.0
+        home_label.text = "HOME"
+        home_label.lifetime.sec = 0
+        marker_array.markers.append(home_label)
+
+        # Kitchen marker
+        kitchen_marker = Marker()
+        kitchen_marker.header.frame_id = "world"
+        kitchen_marker.header.stamp = self.get_clock().now().to_msg()
+        kitchen_marker.ns = "locations"
+        kitchen_marker.id = marker_id
+        marker_id += 1
+        kitchen_marker.type = Marker.CYLINDER
+        kitchen_marker.action = Marker.ADD
+        kitchen_marker.pose.position.x = self.KITCHEN_POSITION["x"]
+        kitchen_marker.pose.position.y = self.KITCHEN_POSITION["y"]
+        kitchen_marker.pose.position.z = 0.01
+        kitchen_marker.pose.orientation.w = 1.0
+        kitchen_marker.scale.x = 0.4
+        kitchen_marker.scale.y = 0.4
+        kitchen_marker.scale.z = 0.02
+        # Color based on state
+        if self.current_state in [DeliveryState.WAITING_AT_KITCHEN, DeliveryState.GOING_TO_KITCHEN]:
+            kitchen_marker.color.r = 1.0
+            kitchen_marker.color.g = 0.5
+            kitchen_marker.color.b = 0.0
+        else:
+            kitchen_marker.color.r = 0.8
+            kitchen_marker.color.g = 0.2
+            kitchen_marker.color.b = 0.2
+        kitchen_marker.color.a = 0.8
+        kitchen_marker.lifetime.sec = 0
+        marker_array.markers.append(kitchen_marker)
+
+        # Kitchen label
+        kitchen_label = Marker()
+        kitchen_label.header.frame_id = "world"
+        kitchen_label.header.stamp = self.get_clock().now().to_msg()
+        kitchen_label.ns = "labels"
+        kitchen_label.id = marker_id
+        marker_id += 1
+        kitchen_label.type = Marker.TEXT_VIEW_FACING
+        kitchen_label.action = Marker.ADD
+        kitchen_label.pose.position.x = self.KITCHEN_POSITION["x"]
+        kitchen_label.pose.position.y = self.KITCHEN_POSITION["y"] + 0.25
+        kitchen_label.pose.position.z = 0.15
+        kitchen_label.pose.orientation.w = 1.0
+        kitchen_label.scale.z = 0.08
+        kitchen_label.color.r = 1.0
+        kitchen_label.color.g = 0.8
+        kitchen_label.color.b = 0.8
+        kitchen_label.color.a = 1.0
+        kitchen_label.text = "KITCHEN"
+        kitchen_label.lifetime.sec = 0
+        marker_array.markers.append(kitchen_label)
+
+        # Table markers with status-aware colors
         for table_id, pos in self.TABLE_POSITIONS.items():
-            locations.append((f"table_{table_id}", pos, (0.5, 0.5, 0.5)))
+            # Determine table status color
+            table_color = (0.5, 0.5, 0.5)  # default grey
+            table_status = ""
+            for order in self.active_orders:
+                if order.table_id == table_id:
+                    if order.status == "delivered":
+                        table_color = (0.0, 0.9, 0.0)  # green
+                        table_status = " [DELIVERED]"
+                    elif order.status == "delivering":
+                        table_color = (1.0, 0.8, 0.0)  # yellow
+                        table_status = " [DELIVERING]"
+                    elif order.status == "canceled":
+                        table_color = (0.8, 0.0, 0.0)  # red
+                        table_status = " [CANCELED]"
+                    elif order.status == "timeout":
+                        table_color = (0.6, 0.0, 0.0)  # dark red
+                        table_status = " [TIMEOUT]"
+                    elif order.status in ["waiting_kitchen", "ready_for_delivery"]:
+                        table_color = (1.0, 0.5, 0.0)  # orange
+                        table_status = " [PENDING]"
+                    break
+            for order in self.pending_orders:
+                if order.table_id == table_id:
+                    table_color = (0.7, 0.7, 0.0)  # dim yellow
+                    table_status = " [QUEUED]"
+                    break
 
-        for name, pos, color in locations:
-            loc_marker = Marker()
-            loc_marker.header.frame_id = "world"
-            loc_marker.header.stamp = self.get_clock().now().to_msg()
-            loc_marker.ns = "locations"
-            loc_marker.id = marker_id
+            # Table location marker
+            table_marker = Marker()
+            table_marker.header.frame_id = "world"
+            table_marker.header.stamp = self.get_clock().now().to_msg()
+            table_marker.ns = "locations"
+            table_marker.id = marker_id
             marker_id += 1
-            loc_marker.type = Marker.CUBE
-            loc_marker.action = Marker.ADD
-            loc_marker.pose.position.x = pos["x"]
-            loc_marker.pose.position.y = pos["y"]
-            loc_marker.pose.position.z = 0.0
-            loc_marker.pose.orientation.w = 1.0
-            loc_marker.scale.x = 0.3
-            loc_marker.scale.y = 0.3
-            loc_marker.scale.z = 0.05
-            loc_marker.color.r = color[0]
-            loc_marker.color.g = color[1]
-            loc_marker.color.b = color[2]
-            loc_marker.color.a = 0.7
-            marker_array.markers.append(loc_marker)
+            table_marker.type = Marker.CYLINDER
+            table_marker.action = Marker.ADD
+            table_marker.pose.position.x = pos["x"]
+            table_marker.pose.position.y = pos["y"]
+            table_marker.pose.position.z = 0.01
+            table_marker.pose.orientation.w = 1.0
+            table_marker.scale.x = 0.35
+            table_marker.scale.y = 0.35
+            table_marker.scale.z = 0.02
+            table_marker.color.r = table_color[0]
+            table_marker.color.g = table_color[1]
+            table_marker.color.b = table_color[2]
+            table_marker.color.a = 0.8
+            table_marker.lifetime.sec = 0
+            marker_array.markers.append(table_marker)
 
-            # Location label
-            label_marker = Marker()
-            label_marker.header.frame_id = "world"
-            label_marker.header.stamp = self.get_clock().now().to_msg()
-            label_marker.ns = "labels"
-            label_marker.id = marker_id
+            # Table label
+            table_label = Marker()
+            table_label.header.frame_id = "world"
+            table_label.header.stamp = self.get_clock().now().to_msg()
+            table_label.ns = "labels"
+            table_label.id = marker_id
             marker_id += 1
-            label_marker.type = Marker.TEXT_VIEW_FACING
-            label_marker.action = Marker.ADD
-            label_marker.pose.position.x = pos["x"]
-            label_marker.pose.position.y = pos["y"] + 0.2
-            label_marker.pose.position.z = 0.1
-            label_marker.pose.orientation.w = 1.0
-            label_marker.scale.z = 0.05
-            label_marker.color.r = 1.0
-            label_marker.color.g = 1.0
-            label_marker.color.b = 1.0
-            label_marker.color.a = 1.0
-            label_marker.text = name.replace("_", " ").title()
-            marker_array.markers.append(label_marker)
+            table_label.type = Marker.TEXT_VIEW_FACING
+            table_label.action = Marker.ADD
+            table_label.pose.position.x = pos["x"]
+            table_label.pose.position.y = pos["y"] + 0.25
+            table_label.pose.position.z = 0.15
+            table_label.pose.orientation.w = 1.0
+            table_label.scale.z = 0.07
+            table_label.color.r = 1.0
+            table_label.color.g = 1.0
+            table_label.color.b = 1.0
+            table_label.color.a = 1.0
+            table_label.text = f"Table {table_id}{table_status}"
+            table_label.lifetime.sec = 0
+            marker_array.markers.append(table_label)
+
+        # Path trail showing delivery route when active
+        if self.active_orders and self.current_state != DeliveryState.IDLE:
+            path_marker = Marker()
+            path_marker.header.frame_id = "world"
+            path_marker.header.stamp = self.get_clock().now().to_msg()
+            path_marker.ns = "path"
+            path_marker.id = marker_id
+            marker_id += 1
+            path_marker.type = Marker.LINE_STRIP
+            path_marker.action = Marker.ADD
+            path_marker.scale.x = 0.02
+            path_marker.color.r = 0.3
+            path_marker.color.g = 0.8
+            path_marker.color.b = 1.0
+            path_marker.color.a = 0.5
+            path_marker.lifetime.sec = 0
+
+            # Build planned route: kitchen -> tables -> kitchen -> home
+            route_points = []
+            # Start from current position
+            pt = Point()
+            pt.x = self.current_position["x"]
+            pt.y = self.current_position["y"]
+            pt.z = 0.03
+            route_points.append(pt)
+
+            # Add remaining table destinations
+            for i in range(self.current_order_index, len(self.active_orders)):
+                order = self.active_orders[i]
+                if order.status not in ["delivered", "canceled", "timeout"]:
+                    table_pos = self.TABLE_POSITIONS.get(order.table_id)
+                    if table_pos:
+                        pt = Point()
+                        pt.x = table_pos["x"]
+                        pt.y = table_pos["y"]
+                        pt.z = 0.03
+                        route_points.append(pt)
+
+            # Return via kitchen to home
+            pt_kitchen = Point()
+            pt_kitchen.x = self.KITCHEN_POSITION["x"]
+            pt_kitchen.y = self.KITCHEN_POSITION["y"]
+            pt_kitchen.z = 0.03
+            route_points.append(pt_kitchen)
+
+            pt_home = Point()
+            pt_home.x = self.HOME_POSITION["x"]
+            pt_home.y = self.HOME_POSITION["y"]
+            pt_home.z = 0.03
+            route_points.append(pt_home)
+
+            path_marker.points = route_points
+            marker_array.markers.append(path_marker)
 
         self.marker_publisher.publish(marker_array)
 

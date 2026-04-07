@@ -195,11 +195,30 @@ ros2 topic echo /butler/status
 
 ## RViz Visualization
 
-The system automatically launches RViz with:
-- Robot model (TurtleBot3 WAFFLE)
-- LaserScan visualization
-- Global map
-- Grid for reference
+The system provides rich RViz2 visualization with:
+- **Robot model**: TurtleBot3 WAFFLE with full URDF rendering
+- **Delivery markers**: Color-coded location markers (home, kitchen, tables) published on `/delivery_markers`
+  - Tables change color based on order status: grey (idle), orange (pending), yellow (delivering), green (delivered), red (canceled/timeout)
+  - Robot shown as green cylinder with state text above
+  - Yellow arrow pointing from robot to current target
+  - Cyan path trail showing planned delivery route
+- **LaserScan**: Real-time obstacle detection visualization
+- **Navigation**: Global/local costmaps and Nav2 planned path
+- **Map**: Static restaurant map for navigation reference
+- **TF frames**: Coordinate frame visualization for all locations
+
+### Launch Options
+
+```bash
+# Full system with Gazebo + Nav2 + RViz
+ros2 launch butler_delivery butler_delivery.launch.py
+
+# Visualization-only mode (no Gazebo, uses delivery markers in RViz)
+ros2 launch butler_delivery visualization_only.launch.py
+
+# Minimal spawn (Gazebo only, no navigation)
+ros2 launch butler_delivery spawn_turtlebot.launch.py use_rviz:=true
+```
 
 ## Implementation Details
 

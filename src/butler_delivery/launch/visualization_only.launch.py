@@ -4,6 +4,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -12,7 +13,13 @@ def generate_launch_description():
     # Get package directory
     pkg_dir = get_package_share_directory('butler_delivery')
 
+    use_rviz = LaunchConfiguration('use_rviz', default='true')
+
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'use_rviz', default_value='true',
+            description='Whether to launch RViz2 for marker visualization'),
+
         # Delivery manager node
         Node(
             package='butler_delivery',
@@ -55,6 +62,16 @@ def generate_launch_description():
             executable='static_transform_publisher',
             name='world_to_table3',
             arguments=['1.5', '-0.5', '0', '0', '0', '0', 'world', 'table3']
+        ),
+
+        # RViz2 for delivery marker visualization
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', os.path.join(pkg_dir, 'config', 'delivery_visualization.rviz')],
+            output='screen',
+            condition=IfCondition(use_rviz),
         ),
 
         # Robot visualizer (text-based)

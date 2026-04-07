@@ -3,23 +3,82 @@
   <model name="table_model">
     <static>true</static>
     <link name="link">
-      <pose>0 0 0.2 0 0 0</pose>
-      <collision name="collision">
+      <!-- Table top -->
+      <visual name="tabletop">
+        <pose>0 0 0.38 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.6 0.6 0.4</size>
-          </box>
-        </geometry>
-      </collision>
-      <visual name="visual">
-        <geometry>
-          <box>
-            <size>0.6 0.6 0.4</size>
+            <size>0.6 0.6 0.04</size>
           </box>
         </geometry>
         <material>
-          <ambient>0.7 0.4 0.1 1</ambient>
-          <diffuse>0.7 0.4 0.1 1</diffuse>
+          <ambient>0.55 0.35 0.15 1</ambient>
+          <diffuse>0.65 0.4 0.15 1</diffuse>
+          <specular>0.1 0.05 0.02 1</specular>
+        </material>
+      </visual>
+      <collision name="tabletop_collision">
+        <pose>0 0 0.38 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.6 0.6 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <!-- Table leg 1 -->
+      <visual name="leg1">
+        <pose>0.22 0.22 0.18 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.36</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.4 0.25 0.1 1</ambient>
+          <diffuse>0.4 0.25 0.1 1</diffuse>
+        </material>
+      </visual>
+      <!-- Table leg 2 -->
+      <visual name="leg2">
+        <pose>-0.22 0.22 0.18 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.36</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.4 0.25 0.1 1</ambient>
+          <diffuse>0.4 0.25 0.1 1</diffuse>
+        </material>
+      </visual>
+      <!-- Table leg 3 -->
+      <visual name="leg3">
+        <pose>0.22 -0.22 0.18 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.36</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.4 0.25 0.1 1</ambient>
+          <diffuse>0.4 0.25 0.1 1</diffuse>
+        </material>
+      </visual>
+      <!-- Table leg 4 -->
+      <visual name="leg4">
+        <pose>-0.22 -0.22 0.18 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.36</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.4 0.25 0.1 1</ambient>
+          <diffuse>0.4 0.25 0.1 1</diffuse>
         </material>
       </visual>
     </link>

@@ -15,7 +15,7 @@ setup(
             'launch/visualization_only.launch.py',
             'launch/spawn_turtlebot.launch.py'
         ]),
-        ('share/' + package_name + '/config', ['config/delivery_visualization.rviz', 'config/restaurant_nav2_params.yaml']),
+        ('share/' + package_name + '/config', ['config/delivery_visualization.rviz', 'config/butler_rviz.rviz', 'config/restaurant_nav2_params.yaml']),
         ('share/' + package_name + '/models', ['models/table.sdf', 'models/kitchen.sdf']),
         ('share/' + package_name + '/worlds', ['worlds/restaurant.world']),
         ('share/' + package_name + '/maps', ['maps/restaurant.pgm', 'maps/restaurant.yaml']),

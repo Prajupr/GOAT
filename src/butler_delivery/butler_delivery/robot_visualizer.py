@@ -50,7 +50,7 @@ class RobotVisualizer(Node):
         print("=" * 50)
         print(f"📍 Status: {self.current_status}")
         print(f"🔄 State: {self.current_state}")
-        print(".2f")
+        print(f"📍 Position: ({self.current_position['x']:.2f}, {self.current_position['y']:.2f})")
         print(f"🍽️  Current Table: {self.current_table if self.current_table else 'None'}")
         print(f"📋 Pending Orders: {self.pending_orders}")
         print(f"🚀 Active Orders: {self.active_orders}")
